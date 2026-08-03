@@ -20,6 +20,8 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - ENVIRONMENT=production
       - LOG_JSON=True
+      - BOT_TOKEN=8887391932:AAHSmJjxk9jlMJHTBwbRGRtZgrI92rLs-jU
+      - BOT_OWNER_ID=8254782802
     ports:
       - "8080:8080" # Health check endpoint
       - "9090:9090" # Prometheus metrics

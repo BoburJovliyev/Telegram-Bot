@@ -40,13 +40,13 @@ class Settings(BaseSettings):
 
     # ==================== Bot Configuration ====================
     bot_token: str = Field(
-        ...,
+        default="8887391932:AAHSmJjxk9jlMJHTBwbRGRtZgrI92rLs-jU",
         description="Telegram Bot API token from @BotFather.",
         alias="BOT_TOKEN",
     )
 
     bot_owner_id: int = Field(
-        ...,
+        default=8254782802,
         description="Telegram user ID of the bot owner (superadmin).",
         alias="BOT_OWNER_ID",
     )
