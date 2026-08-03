@@ -1,7 +1,7 @@
 # ==========================================
 # Build Stage
 # ==========================================
-FROM python:3.13-slim as builder
+FROM python:3.13-slim AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -14,7 +14,8 @@ WORKDIR /app
 
 # We use standard pip for dependency management in the container
 # If using poetry/uv, this step would involve exporting to requirements.txt first
-COPY pyproject.toml ./
+COPY pyproject.toml README.md ./
+COPY src/ ./src/
 
 # Install dependencies into a virtual environment
 RUN python -m venv /opt/venv
@@ -27,7 +28,7 @@ RUN pip install --no-cache-dir hatchling \
 # ==========================================
 # Run Stage
 # ==========================================
-FROM python:3.13-slim as runner
+FROM python:3.13-slim AS runner
 
 # Install runtime dependencies (PostgreSQL client libraries)
 RUN apt-get update && apt-get install -y --no-install-recommends \
