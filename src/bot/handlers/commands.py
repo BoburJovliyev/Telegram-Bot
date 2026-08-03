@@ -19,7 +19,8 @@ async def cmd_start(message: Message) -> None:
     """Handle the /start command."""
     if message.chat.type == "private":
         await message.answer(
-            "👋 Welcome to the Enterprise Invite Tracker Bot!\n\n"
+            "👋 Assalomu alaykum! Bot faol va ishlamoqda. (The bot is up and running!)\n\n"
+            "Welcome to the Enterprise Invite Tracker Bot!\n\n"
             "Add me to your group, grant me administrator permissions "
             "(specifically 'Invite Users'), and I will automatically "
             "start tracking who invites whom."
