@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from bot.config import get_settings
 from bot.database.engine import create_engine, create_session_factory
-from bot.models.base import Base
+from bot.database.base import Base
 # Handlers and middlewares will be imported and registered here later
 
 logger = structlog.get_logger(__name__)
