@@ -1,7 +1,7 @@
 """
 Throttling (Rate Limiting) Middleware.
 
-Uses Redis to implement rate limiting on commands and interactions
+Uses the central RateLimiter to implement rate limiting on commands and interactions
 to protect the bot from spam and abuse.
 """
 
@@ -12,11 +12,12 @@ from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject, Message
 from redis.asyncio import Redis
 
+from bot.security.rate_limiter import RateLimiter
+
 
 class ThrottlingMiddleware(BaseMiddleware):
     """
-    Simple rate limiting middleware using Redis.
-    Limits users to X messages per Y seconds.
+    Rate limiting middleware using the centralized RateLimiter.
     """
 
     def __init__(self, rate_limit: int = 1, timeout: int = 2) -> None:
@@ -45,26 +46,18 @@ class ThrottlingMiddleware(BaseMiddleware):
             return await handler(event, data)
 
         user_id = event.from_user.id
-        # Differentiate between group messages and private messages
-        chat_id = event.chat.id
         
         # We generally only care about throttling commands or private bot chats
-        # Throttling every message in a busy group will overwhelm Redis unnecessarily.
-        # Only throttle if it's a private chat or a command in a group.
-        if event.chat.type != "private" and not event.text?.startswith("/"):
+        text = getattr(event, "text", "")
+        if event.chat.type != "private" and (not text or not text.startswith("/")):
             return await handler(event, data)
 
-        key = f"throttle:{chat_id}:{user_id}"
+        limiter = RateLimiter(redis)
+        action = "global_msg"
         
-        # Atomic Redis operation: increment counter and set expiry if it's new
-        async with redis.pipeline() as pipe:
-            pipe.incr(key)
-            pipe.expire(key, self.timeout, nx=True)
-            results = await pipe.execute()
-            
-        current_count = results[0]
+        allowed = await limiter.check_rate_limit(user_id, action, self.rate_limit, self.timeout)
 
-        if current_count > self.rate_limit:
+        if not allowed:
             # Drop the update
             return None
 

@@ -9,7 +9,9 @@ from aiogram import Router
 
 from bot.handlers.chat_member import router as chat_member_router
 from bot.handlers.commands import router as commands_router
+from bot.handlers.admin_cmd import router as admin_cmd_router
 from bot.handlers.my_chat_member import router as my_chat_member_router
+from bot.handlers.callbacks import router as callbacks_router
 
 def setup_routers() -> Router:
     """
@@ -22,6 +24,8 @@ def setup_routers() -> Router:
     # Typically, specific events like my_chat_member go first.
     root_router.include_router(my_chat_member_router)
     root_router.include_router(chat_member_router)
+    root_router.include_router(admin_cmd_router)
     root_router.include_router(commands_router)
+    root_router.include_router(callbacks_router)
     
     return root_router

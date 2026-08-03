@@ -114,17 +114,21 @@ class Application:
         from bot.middlewares.database import DatabaseMiddleware
         from bot.middlewares.logging import LoggingMiddleware
         from bot.middlewares.throttling import ThrottlingMiddleware
+        from bot.middlewares.acl import ACLMiddleware
         
         logger.info("Registering middlewares...")
         
         # Logging goes first so context is bound immediately
         self.dp.update.outer_middleware(LoggingMiddleware())
         
+        # Database goes before ACL so the ACL middleware has access to the session_factory
+        self.dp.update.outer_middleware(DatabaseMiddleware(self.session_factory))
+        
+        # ACL middleware attaches user_role to the context
+        self.dp.update.outer_middleware(ACLMiddleware())
+        
         # Throttling goes next to drop spam early
         self.dp.message.middleware(ThrottlingMiddleware(rate_limit=1, timeout=2))
-        
-        # Database goes last to avoid opening DB sessions for dropped spam
-        self.dp.update.outer_middleware(DatabaseMiddleware(self.session_factory))
 
     def setup_routers(self) -> None:
         """Register the root router."""
@@ -136,16 +140,7 @@ class Application:
 
     def setup_jobs(self) -> None:
         """Register all APScheduler background jobs."""
-        from bot.jobs.stats_aggregator import aggregate_daily_stats
+        from bot.scheduler.setup import setup_scheduler
         
-        logger.info("Registering scheduled jobs...")
-        
-        # Run daily stats aggregation every 30 minutes
-        self.scheduler.add_job(
-            aggregate_daily_stats,
-            trigger="interval",
-            minutes=30,
-            kwargs={"session_factory": self.session_factory},
-            id="aggregate_daily_stats",
-            replace_existing=True,
-        )
+        if self.scheduler and self.session_factory and self.bot:
+            setup_scheduler(self.scheduler, self.session_factory, self.bot)
