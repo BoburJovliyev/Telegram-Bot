@@ -23,7 +23,7 @@ from sqlalchemy import (
     Text,
     text,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from bot.core.enums import EventType
@@ -81,7 +81,7 @@ class MemberEvent(Base, UUIDPrimaryKeyMixin):
     # - For promotes: {"old_role": "member", "new_role": "admin"}
     # - For joins: {"join_method": "invite_link", "inviter_id": 123456}
     event_metadata: Mapped[dict | None] = mapped_column(
-        JSONB,
+        JSON,
         nullable=True,
         doc="Event-specific metadata as JSON.",
     )

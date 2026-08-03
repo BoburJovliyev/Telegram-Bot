@@ -90,8 +90,8 @@ class Settings(BaseSettings):
 
     # ==================== Database ====================
     database_url: str = Field(
-        default="postgresql+asyncpg://postgres:postgres@localhost:5432/invite_tracker",
-        description="PostgreSQL connection URL with asyncpg driver.",
+        default="sqlite+aiosqlite:///invite_tracker.db",
+        description="SQLite connection URL.",
         alias="DATABASE_URL",
     )
 
@@ -101,12 +101,7 @@ class Settings(BaseSettings):
         alias="DATABASE_ECHO",
     )
 
-    # ==================== Redis ====================
-    redis_url: str = Field(
-        default="redis://localhost:6379/0",
-        description="Redis connection URL for caching and rate limiting.",
-        alias="REDIS_URL",
-    )
+
 
     # ==================== Logging ====================
     log_level: str = Field(
@@ -181,11 +176,11 @@ class Settings(BaseSettings):
     @field_validator("database_url")
     @classmethod
     def validate_database_url(cls, v: str) -> str:
-        """Ensure the database URL uses the asyncpg driver."""
-        if not v.startswith("postgresql+asyncpg://"):
+        """Ensure the database URL uses the aiosqlite driver."""
+        if not v.startswith("sqlite+aiosqlite://"):
             raise ValueError(
-                "Database URL must use the asyncpg driver. "
-                "Expected format: 'postgresql+asyncpg://user:pass@host:5432/db'"
+                "Database URL must use the aiosqlite driver. "
+                "Expected format: 'sqlite+aiosqlite:///db.sqlite3'"
             )
         return v
 

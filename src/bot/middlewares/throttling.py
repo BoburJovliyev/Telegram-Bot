@@ -10,7 +10,6 @@ from typing import Any
 
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject, Message
-from redis.asyncio import Redis
 
 from bot.security.rate_limiter import RateLimiter
 
@@ -40,10 +39,7 @@ class ThrottlingMiddleware(BaseMiddleware):
         if not isinstance(event, Message) or not event.from_user:
             return await handler(event, data)
 
-        redis: Redis = data.get("redis")
-        if not redis:
-            # If Redis isn't configured, bypass throttling
-            return await handler(event, data)
+
 
         user_id = event.from_user.id
         
@@ -52,7 +48,7 @@ class ThrottlingMiddleware(BaseMiddleware):
         if event.chat.type != "private" and (not text or not text.startswith("/")):
             return await handler(event, data)
 
-        limiter = RateLimiter(redis)
+        limiter = RateLimiter()
         action = "global_msg"
         
         allowed = await limiter.check_rate_limit(user_id, action, self.rate_limit, self.timeout)

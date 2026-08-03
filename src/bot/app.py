@@ -10,13 +10,13 @@ import structlog
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.fsm.storage.redis import RedisStorage
+from aiogram.fsm.storage.memory import MemoryStorage
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from bot.config import get_settings
 from bot.database.engine import create_engine, create_session_factory
+from bot.models.base import Base
 # Handlers and middlewares will be imported and registered here later
 
 logger = structlog.get_logger(__name__)
@@ -34,7 +34,6 @@ class Application:
         self.dp: Dispatcher | None = None
         self.engine: AsyncEngine | None = None
         self.session_factory: async_sessionmaker[AsyncSession] | None = None
-        self.redis: Redis | None = None
         self.scheduler: AsyncIOScheduler | None = None
 
     async def initialize(self) -> None:
@@ -47,16 +46,15 @@ class Application:
             echo=self.settings.database_echo,
         )
         self.session_factory = create_session_factory(self.engine)
-        logger.info("Database engine initialized")
+        
+        # Auto-create tables for SQLite
+        import bot.models  # Ensure all models are registered
+        async with self.engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+            
+        logger.info("Database engine initialized and tables created")
 
-        # 2. Redis
-        self.redis = Redis.from_url(
-            self.settings.redis_url, 
-            decode_responses=True
-        )
-        # Test connection
-        await self.redis.ping()
-        logger.info("Redis connected")
+
 
         # 3. Scheduler
         self.scheduler = AsyncIOScheduler()
@@ -70,14 +68,13 @@ class Application:
             default=DefaultBotProperties(parse_mode=ParseMode.HTML)
         )
         
-        # We use RedisStorage for FSM
-        storage = RedisStorage(redis=self.redis)
+        # We use MemoryStorage for FSM
+        storage = MemoryStorage()
         
         self.dp = Dispatcher(storage=storage)
         
         # Dependency injection via WorkflowData
         self.dp["session_factory"] = self.session_factory
-        self.dp["redis"] = self.redis
         self.dp["scheduler"] = self.scheduler
         self.dp["settings"] = self.settings
 
@@ -99,9 +96,7 @@ class Application:
             await self.bot.session.close()
             logger.info("Bot session closed")
             
-        if self.redis:
-            await self.redis.close()
-            logger.info("Redis connection closed")
+
             
         if self.engine:
             await self.engine.dispose()

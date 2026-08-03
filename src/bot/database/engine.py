@@ -60,16 +60,11 @@ def create_engine(
           (handles PostgreSQL restarts and network interruptions).
         - pool_size is set conservatively; adjust based on expected concurrency.
     """
+    from sqlalchemy.pool import NullPool
     return create_async_engine(
         url=database_url,
         echo=echo,
-        pool_size=pool_size,
-        max_overflow=max_overflow,
-        pool_recycle=pool_recycle,
-        pool_pre_ping=True,
-        # Disable implicit returning for asyncpg compatibility
-        # (asyncpg handles RETURNING differently)
-        insertmanyvalues_page_size=1000,
+        poolclass=NullPool,
     )
 
 

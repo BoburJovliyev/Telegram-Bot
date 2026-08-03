@@ -6,7 +6,6 @@ FROM python:3.13-slim AS builder
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -32,7 +31,6 @@ FROM python:3.13-slim AS runner
 
 # Install runtime dependencies (PostgreSQL client libraries)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq5 \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
@@ -62,5 +60,5 @@ USER botuser
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 
-# Command to run migrations and start the bot
-CMD ["bash", "-c", "alembic upgrade head && python -m bot"]
+# Command to start the bot
+CMD ["python", "-m", "bot"]
