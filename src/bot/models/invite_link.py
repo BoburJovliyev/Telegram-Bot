@@ -197,7 +197,7 @@ class InviteLink(Base, UUIDPrimaryKeyMixin, TimestampMixin):
             "ix_invite_links_active",
             "group_id",
             "is_revoked",
-            postgresql_where=text("is_revoked = FALSE"),
+            sqlite_where=text("is_revoked = FALSE"),
         ),
     )
 

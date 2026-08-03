@@ -92,7 +92,7 @@ class Notification(Base, UUIDPrimaryKeyMixin):
     # ==================== Timestamps ====================
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        server_default=text("NOW()"),
+        server_default=text("CURRENT_TIMESTAMP"),
         nullable=False,
         doc="When the notification was created.",
     )
@@ -127,7 +127,7 @@ class Notification(Base, UUIDPrimaryKeyMixin):
             "ix_notifications_pending",
             "is_sent",
             "retry_count",
-            postgresql_where=text("is_sent = FALSE AND retry_count < 3"),
+            sqlite_where=text("is_sent = FALSE AND retry_count < 3"),
         ),
     )
 

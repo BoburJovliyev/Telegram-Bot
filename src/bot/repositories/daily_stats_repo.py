@@ -5,7 +5,7 @@ Daily Stats Repository.
 from datetime import date
 
 from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.models.daily_stats import DailyStats

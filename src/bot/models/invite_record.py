@@ -107,7 +107,7 @@ class InviteRecord(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     # ==================== Timestamps ====================
     joined_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        server_default=text("NOW()"),
+        server_default=text("CURRENT_TIMESTAMP"),
         nullable=False,
         doc="When the invitee joined the group via this invite.",
     )

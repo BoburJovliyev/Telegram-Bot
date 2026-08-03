@@ -5,7 +5,7 @@ Admin Repository.
 from typing import Sequence
 
 from sqlalchemy import select, update, text
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -57,7 +57,7 @@ class AdminRepository(BaseRepository[GroupAdmin]):
                 "is_anonymous": stmt.excluded.is_anonymous,
                 "is_active": True,
                 "demoted_at": None,
-                "updated_at": select(text("NOW()")).scalar_subquery(),
+                "updated_at": select(text("CURRENT_TIMESTAMP")).scalar_subquery(),
                 **{k: getattr(stmt.excluded, k) for k in permissions.keys()}
             },
         ).returning(GroupAdmin)
@@ -77,8 +77,8 @@ class AdminRepository(BaseRepository[GroupAdmin]):
             )
             .values(
                 is_active=False,
-                demoted_at=select(text("NOW()")).scalar_subquery(),
-                updated_at=select(text("NOW()")).scalar_subquery(),
+                demoted_at=select(text("CURRENT_TIMESTAMP")).scalar_subquery(),
+                updated_at=select(text("CURRENT_TIMESTAMP")).scalar_subquery(),
             )
         )
         await self.session.execute(stmt)

@@ -4,8 +4,8 @@ Invite Link Repository.
 
 from datetime import datetime
 
-from sqlalchemy import select, update
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import select, update, text
+from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -57,8 +57,8 @@ class InviteLinkRepository(BaseRepository[InviteLink]):
                 "creates_join_request": stmt.excluded.creates_join_request,
                 "is_primary": stmt.excluded.is_primary,
                 "is_revoked": stmt.excluded.is_revoked,
-                "revoked_at": select(text("NOW()")).scalar_subquery() if is_revoked else None,
-                "updated_at": select(text("NOW()")).scalar_subquery(),
+                "revoked_at": select(text("CURRENT_TIMESTAMP")).scalar_subquery() if is_revoked else None,
+                "updated_at": select(text("CURRENT_TIMESTAMP")).scalar_subquery(),
             },
         ).returning(InviteLink)
 

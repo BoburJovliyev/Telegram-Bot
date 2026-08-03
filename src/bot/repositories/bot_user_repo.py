@@ -3,7 +3,7 @@ BotUser Repository.
 """
 
 from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.models.bot_user import BotUser
@@ -49,7 +49,7 @@ class BotUserRepository(BaseRepository[BotUser]):
                 "last_name": stmt.excluded.last_name,
                 "language_code": stmt.excluded.language_code,
                 "is_premium": stmt.excluded.is_premium,
-                "last_seen_at": select(text("NOW()")).scalar_subquery(),
+                "last_seen_at": select(text("CURRENT_TIMESTAMP")).scalar_subquery(),
             },
         ).returning(BotUser)
 

@@ -4,8 +4,8 @@ Group Repository.
 
 from typing import Sequence
 
-from sqlalchemy import select, update
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import select, update, text
+from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -48,7 +48,7 @@ class GroupRepository(BaseRepository[Group]):
                 "description": stmt.excluded.description,
                 "is_active": True,
                 "is_public": stmt.excluded.username != None,
-                "bot_joined_at": select(text("NOW()")).scalar_subquery(),
+                "bot_joined_at": select(text("CURRENT_TIMESTAMP")).scalar_subquery(),
                 "bot_left_at": None,
             },
         ).returning(Group)
@@ -78,7 +78,7 @@ class GroupRepository(BaseRepository[Group]):
             .where(Group.id == chat_id)
             .values(
                 is_active=False,
-                bot_left_at=select(text("NOW()")).scalar_subquery()
+                bot_left_at=select(text("CURRENT_TIMESTAMP")).scalar_subquery()
             )
         )
         await self.session.execute(stmt)

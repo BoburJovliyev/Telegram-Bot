@@ -38,21 +38,21 @@ class NotificationRepository(BaseRepository[Notification]):
             .where(Notification.id == notification_id)
             .values(
                 is_sent=True,
-                sent_at=select(text("NOW()")).scalar_subquery()
+                sent_at=select(text("CURRENT_TIMESTAMP")).scalar_subquery()
             )
         )
         await self.session.execute(stmt)
         await self.session.flush()
 
-    async def increment_retry(self, notification_id: str, error_message: str | None = None) -> None:
-        """Increment retry count after a failure."""
+    async def increment_retry_count(self, notification_id: str, error_message: str) -> None:
+        """Increment retry count and record the last error message."""
         stmt = (
             update(Notification)
             .where(Notification.id == notification_id)
             .values(
                 retry_count=Notification.retry_count + 1,
-                error_message=error_message,
-                updated_at=select(text("NOW()")).scalar_subquery()
+                last_error=error_message[:500],
+                updated_at=select(text("CURRENT_TIMESTAMP")).scalar_subquery()
             )
         )
         await self.session.execute(stmt)

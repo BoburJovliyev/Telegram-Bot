@@ -3,7 +3,7 @@ Invite Record Repository.
 """
 
 from sqlalchemy import select, update, text
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -62,8 +62,8 @@ class InviteRecordRepository(BaseRepository[InviteRecord]):
             )
             .values(
                 is_active=False,
-                left_at=select(text("NOW()")).scalar_subquery(),
-                updated_at=select(text("NOW()")).scalar_subquery(),
+                left_at=select(text("CURRENT_TIMESTAMP")).scalar_subquery(),
+                updated_at=select(text("CURRENT_TIMESTAMP")).scalar_subquery(),
             )
             .returning(InviteRecord)
         )

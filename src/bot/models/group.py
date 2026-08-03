@@ -113,14 +113,14 @@ class Group(Base, TimestampMixin):
     # ==================== Timestamps ====================
     registered_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        server_default=text("NOW()"),
+        server_default=text("CURRENT_TIMESTAMP"),
         nullable=False,
         doc="When the bot was first added to this group.",
     )
 
     bot_joined_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        server_default=text("NOW()"),
+        server_default=text("CURRENT_TIMESTAMP"),
         nullable=False,
         doc="When the bot was most recently added to this group.",
     )

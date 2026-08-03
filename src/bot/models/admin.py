@@ -169,7 +169,7 @@ class GroupAdmin(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     # ==================== Timestamps ====================
     promoted_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        server_default=text("NOW()"),
+        server_default=text("CURRENT_TIMESTAMP"),
         nullable=False,
         doc="When this user was promoted to admin.",
     )
@@ -203,7 +203,7 @@ class GroupAdmin(Base, UUIDPrimaryKeyMixin, TimestampMixin):
             "group_id",
             "user_id",
             unique=True,
-            postgresql_where=text("is_active = TRUE"),
+            sqlite_where=text("is_active = TRUE"),
         ),
     )
 

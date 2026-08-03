@@ -173,16 +173,6 @@ class Settings(BaseSettings):
             )
         return v
 
-    @field_validator("database_url")
-    @classmethod
-    def validate_database_url(cls, v: str) -> str:
-        """Ensure the database URL uses the aiosqlite driver."""
-        if not v.startswith("sqlite+aiosqlite://"):
-            raise ValueError(
-                "Database URL must use the aiosqlite driver. "
-                "Expected format: 'sqlite+aiosqlite:///db.sqlite3'"
-            )
-        return v
 
     @field_validator("log_level")
     @classmethod

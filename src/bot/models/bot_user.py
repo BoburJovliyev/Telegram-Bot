@@ -106,14 +106,14 @@ class BotUser(Base, TimestampMixin):
     # ==================== Activity Tracking ====================
     first_seen_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        server_default=text("NOW()"),
+        server_default=text("CURRENT_TIMESTAMP"),
         nullable=False,
         doc="Timestamp when the bot first encountered this user.",
     )
 
     last_seen_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        server_default=text("NOW()"),
+        server_default=text("CURRENT_TIMESTAMP"),
         nullable=False,
         doc="Timestamp of the most recent activity from this user.",
     )

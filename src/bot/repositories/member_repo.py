@@ -5,7 +5,7 @@ Member Repository.
 from typing import Sequence
 
 from sqlalchemy import select, update
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -55,7 +55,7 @@ class MemberRepository(BaseRepository[Member]):
         update_set = {
             "status": stmt.excluded.status,
             "is_via_join_request": stmt.excluded.is_via_join_request,
-            "updated_at": select(text("NOW()")).scalar_subquery(),
+            "updated_at": select(text("CURRENT_TIMESTAMP")).scalar_subquery(),
         }
 
         # Track rejoin logic
@@ -63,7 +63,7 @@ class MemberRepository(BaseRepository[Member]):
             update_set["left_at"] = None
             # Only increment rejoin count if they were previously not active
             update_set["rejoin_count"] = Member.rejoin_count + 1
-            update_set["joined_at"] = select(text("NOW()")).scalar_subquery()
+            update_set["joined_at"] = select(text("CURRENT_TIMESTAMP")).scalar_subquery()
             
             # Update attribution if new attribution is provided on rejoin
             if join_method:
@@ -74,7 +74,7 @@ class MemberRepository(BaseRepository[Member]):
                 update_set["invited_by_id"] = stmt.excluded.invited_by_id
                 
         elif status in (MemberStatus.LEFT.value, MemberStatus.KICKED.value, MemberStatus.BANNED.value):
-            update_set["left_at"] = select(text("NOW()")).scalar_subquery()
+            update_set["left_at"] = select(text("CURRENT_TIMESTAMP")).scalar_subquery()
             if status == MemberStatus.BANNED.value:
                 update_set["ban_count"] = Member.ban_count + 1
 

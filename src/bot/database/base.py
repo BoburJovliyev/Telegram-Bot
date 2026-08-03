@@ -91,14 +91,14 @@ class TimestampMixin:
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        server_default=text("NOW()"),
+        server_default=text("CURRENT_TIMESTAMP"),
         nullable=False,
         doc="Timestamp when the record was created (UTC).",
     )
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        server_default=text("NOW()"),
+        server_default=text("CURRENT_TIMESTAMP"),
         onupdate=datetime.utcnow,
         nullable=False,
         doc="Timestamp when the record was last updated (UTC).",

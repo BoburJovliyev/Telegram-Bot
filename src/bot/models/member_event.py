@@ -102,7 +102,7 @@ class MemberEvent(Base, UUIDPrimaryKeyMixin):
     # this table is append-only (no updated_at needed).
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        server_default=text("NOW()"),
+        server_default=text("CURRENT_TIMESTAMP"),
         nullable=False,
         doc="When this event was recorded.",
     )
