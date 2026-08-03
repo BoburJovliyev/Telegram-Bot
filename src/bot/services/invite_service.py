@@ -127,7 +127,7 @@ class InviteTrackingService(BaseService):
                 event_type="joined",
                 idempotency_key=f"event_{idempotency_key}",
                 invite_link_id=link_id_str,
-                metadata={"method": join_method, "is_rejoin": is_rejoin}
+                event_metadata={"method": join_method, "is_rejoin": is_rejoin}
             )
 
             # 8. Commit the entire transaction atomically

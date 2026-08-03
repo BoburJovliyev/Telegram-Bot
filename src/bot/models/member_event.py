@@ -80,7 +80,7 @@ class MemberEvent(Base, UUIDPrimaryKeyMixin):
     # - For bans: {"reason": "spam", "until_date": "2024-01-01"}
     # - For promotes: {"old_role": "member", "new_role": "admin"}
     # - For joins: {"join_method": "invite_link", "inviter_id": 123456}
-    metadata: Mapped[dict | None] = mapped_column(
+    event_metadata: Mapped[dict | None] = mapped_column(
         JSONB,
         nullable=True,
         doc="Event-specific metadata as JSON.",

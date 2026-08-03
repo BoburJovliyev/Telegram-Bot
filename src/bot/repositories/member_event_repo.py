@@ -38,7 +38,7 @@ class MemberEventRepository(BaseRepository[MemberEvent]):
             idempotency_key=idempotency_key,
             performed_by_id=performed_by_id,
             invite_link_id=invite_link_id,
-            metadata=metadata,
+            event_metadata=metadata,
         ).on_conflict_do_nothing(
             index_elements=["idempotency_key"]
         ).returning(MemberEvent)
