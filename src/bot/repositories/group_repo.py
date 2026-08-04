@@ -89,3 +89,13 @@ class GroupRepository(BaseRepository[Group]):
         stmt = select(Group).where(Group.is_active == True)
         result = await self.session.execute(stmt)
         return result.scalars().all()
+
+    async def set_group_owner(self, chat_id: int, owner_id: int) -> None:
+        """Set the owner_id for a group."""
+        stmt = (
+            update(Group)
+            .where(Group.id == chat_id)
+            .values(owner_id=owner_id)
+        )
+        await self.session.execute(stmt)
+        await self.session.flush()

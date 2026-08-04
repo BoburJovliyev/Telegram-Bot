@@ -46,20 +46,37 @@ async def bot_added_to_group(
         adder=adder,
     )
 
-    # Sync admins immediately
-    await group_service.sync_administrators(bot, chat.id)
+    # Sync admins immediately and get the owner_id
+    owner_id = await group_service.sync_administrators(bot, chat.id)
 
-    # Send a welcome message
+    # Send a welcome message to the group
     await bot.send_message(
         chat.id,
         (
-            "👋 Hello! I am the Invite Tracker Bot.\n\n"
-            "I'm now monitoring this group. To track invites accurately, "
-            "<b>I must be an administrator with the 'Invite Users' permission.</b>\n\n"
-            "If I was added by a normal user, please promote me to admin. "
-            "Type /help to see what I can do."
+            "👋 Assalomu alaykum! Men guruhga qo'shildim.\n\n"
+            "Mening vazifam guruhga kim qancha odam qo'shganini hisoblab borish. "
+            "To'g'ri ishlashim uchun **menga Administrator huquqlarini (xususan 'Foydalanuvchilarni qo'shish' - Invite Users) berishingiz shart**.\n\n"
+            "Nimalar qila olishimni ko'rish uchun /help buyrug'ini yuboring."
         ),
     )
+
+    # Send a DM to the group owner in Uzbek
+    if owner_id:
+        try:
+            await bot.send_message(
+                owner_id,
+                (
+                    f"👋 Assalomu alaykum! Men sizning <b>{chat.title}</b> guruhingizga qo'shildim.\n\n"
+                    "🤖 <b>Mening vazifalarim:</b>\n"
+                    "• Guruhga kim qancha odam qo'shganini aniq hisoblab borish\n"
+                    "• Havola (link) orqali qo'shilganlarni ham aniqlash\n"
+                    "• Har 1 soatda sizga yangi qo'shilgan a'zolar bo'yicha hisobot yuborish\n\n"
+                    "✅ <b>Muhim eslatma:</b> To'liq ishlashim uchun guruhda menga <i>'Foydalanuvchilarni qo'shish' (Invite Users)</i> huquqini berishingiz so'raladi.\n\n"
+                    "Guruhda /hisobot buyrug'i orqali istalgan vaqt statistikalarni ko'rishingiz mumkin."
+                )
+            )
+        except Exception as e:
+            logger.warning("Could not send welcome DM to group owner", owner_id=owner_id, error=str(e))
 
 
 @router.my_chat_member(

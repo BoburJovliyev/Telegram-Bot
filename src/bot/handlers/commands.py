@@ -99,3 +99,18 @@ async def cmd_leaderboard(message: Message, session_factory: async_sessionmaker[
         "\n".join(lines),
         reply_markup=get_pagination_keyboard("leaderboard", 1, 1)
     )
+
+@router.message(Command("hisobot"))
+async def cmd_hisobot(message: Message) -> None:
+    """Handle the /hisobot command."""
+    if message.chat.type == "private":
+        await message.answer("❌ Bu buyruq faqat guruhlarda ishlaydi.")
+        return
+
+    from bot.keyboards.report_keyboards import get_report_periods_keyboard
+    
+    await message.answer(
+        "📊 <b>Hisobot davrini tanlang:</b>\n\n"
+        "Qaysi davr uchun statistika ko'rmoqchisiz?",
+        reply_markup=get_report_periods_keyboard()
+    )

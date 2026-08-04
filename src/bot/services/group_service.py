@@ -94,10 +94,11 @@ class GroupService(BaseService):
             
             await uow.commit()
 
-    async def sync_administrators(self, bot: Bot, chat_id: int) -> None:
+    async def sync_administrators(self, bot: Bot, chat_id: int) -> int | None:
         """
         Fetch the current admin list from Telegram API and sync our database.
         Demotes admins in our DB who are no longer admins in Telegram.
+        Returns the owner_id of the group if found.
         """
         self.logger.info("Syncing administrators", chat_id=chat_id)
         
@@ -105,9 +106,10 @@ class GroupService(BaseService):
             tg_admins = await bot.get_chat_administrators(chat_id)
         except Exception as e:
             self.logger.error("Failed to fetch administrators from Telegram", error=str(e))
-            return
+            return None
 
         tg_admin_ids = {admin.user.id for admin in tg_admins}
+        owner_id = None
 
         async with self.uow as uow:
             # 1. Get current active admins from our DB
@@ -138,6 +140,10 @@ class GroupService(BaseService):
                 # Upsert admin record
                 role = AdminRole.OWNER.value if admin.status == "creator" else AdminRole.ADMIN.value
                 
+                if admin.status == "creator":
+                    owner_id = admin.user.id
+                    await uow.groups.set_group_owner(chat_id, owner_id)
+                
                 # Extract boolean permissions based on Telegram's ChatMemberAdministrator properties
                 permissions = {
                     "can_manage_chat": getattr(admin, "can_manage_chat", False),
@@ -161,3 +167,4 @@ class GroupService(BaseService):
             
             await uow.commit()
             self.logger.info("Administrator sync complete", demoted=len(to_demote))
+            return owner_id

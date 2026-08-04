@@ -84,3 +84,47 @@ class InviteRecordRepository(BaseRepository[InviteRecord]):
         )
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def get_period_stats(
+        self, group_id: int, since: "datetime"
+    ) -> tuple[int, int, list[tuple[str, int]]]:
+        """
+        Get statistics for a specific period.
+        Returns: (total_joined, joined_via_link, [(inviter_name, count), ...])
+        """
+        from sqlalchemy import func, desc
+        from bot.models.bot_user import BotUser
+        
+        # 1. Total joined in period
+        stmt_total = select(func.count(InviteRecord.id)).where(
+            InviteRecord.group_id == group_id,
+            InviteRecord.joined_at >= since,
+        )
+        total_joined = (await self.session.execute(stmt_total)).scalar_one_or_none() or 0
+        
+        # 2. Joined via link
+        stmt_links = select(func.count(InviteRecord.id)).where(
+            InviteRecord.group_id == group_id,
+            InviteRecord.joined_at >= since,
+            InviteRecord.invite_link_id != None,
+        )
+        joined_via_link = (await self.session.execute(stmt_links)).scalar_one_or_none() or 0
+        
+        # 3. Top inviters in period
+        stmt_inviters = (
+            select(BotUser.first_name, func.count(InviteRecord.id).label("count"))
+            .join(BotUser, BotUser.id == InviteRecord.inviter_id)
+            .where(
+                InviteRecord.group_id == group_id,
+                InviteRecord.joined_at >= since,
+                InviteRecord.inviter_id != None
+            )
+            .group_by(BotUser.id, BotUser.first_name)
+            .order_by(desc("count"))
+            .limit(10)
+        )
+        inviters_result = await self.session.execute(stmt_inviters)
+        top_inviters = [(row.first_name, row.count) for row in inviters_result]
+        
+        return total_joined, joined_via_link, top_inviters
+
