@@ -88,7 +88,7 @@ class Application:
         logger.info("Shutting down application...")
         
         if self.scheduler:
-            self.scheduler.shutdown()
+            self.scheduler.shutdown(wait=False)
             logger.info("Scheduler shut down")
             
         if self.bot:
