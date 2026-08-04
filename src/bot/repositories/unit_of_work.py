@@ -6,7 +6,7 @@ all repositories sharing a single session. This ensures atomic
 operations across multiple repository calls.
 """
 
-from typing import Self
+from typing import Any, Self
 
 from sqlalchemy.ext.asyncio import AsyncSession
 

@@ -55,14 +55,7 @@ class Application:
         logger.info("Database engine initialized and tables created")
 
 
-
-        # 3. Scheduler
-        self.scheduler = AsyncIOScheduler()
-        self.setup_jobs()
-        self.scheduler.start()
-        logger.info("APScheduler started")
-
-        # 4. Bot & Dispatcher
+        # 3. Bot & Dispatcher
         self.bot = Bot(
             token=self.settings.bot_token,
             default=DefaultBotProperties(parse_mode=ParseMode.HTML)
@@ -75,8 +68,14 @@ class Application:
         
         # Dependency injection via WorkflowData
         self.dp["session_factory"] = self.session_factory
-        self.dp["scheduler"] = self.scheduler
         self.dp["settings"] = self.settings
+
+        # 4. Scheduler (must be after Bot so setup_jobs can use self.bot)
+        self.scheduler = AsyncIOScheduler()
+        self.setup_jobs()
+        self.scheduler.start()
+        self.dp["scheduler"] = self.scheduler
+        logger.info("APScheduler started")
 
         # Middlewares and Routers will be registered here later
         self.setup_middlewares()

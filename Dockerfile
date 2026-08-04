@@ -29,9 +29,10 @@ RUN pip install --no-cache-dir hatchling \
 # ==========================================
 FROM python:3.13-slim AS runner
 
-# Install runtime dependencies (PostgreSQL client libraries)
+# Install runtime dependencies (PostgreSQL client libraries for asyncpg)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user for security

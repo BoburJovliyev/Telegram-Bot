@@ -101,6 +101,19 @@ class Settings(BaseSettings):
         alias="DATABASE_ECHO",
     )
 
+    # ==================== Validators ====================
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def normalize_database_url(cls, v: str) -> str:
+        """
+        Force SQLite for now, since PostgreSQL is not attached on Railway.
+        We will ignore any postgres:// URLs and return a local SQLite URL.
+        """
+        # Always use SQLite in the /app/data directory so it can be mounted to a volume later
+        import os
+        os.makedirs("data", exist_ok=True)
+        return "sqlite+aiosqlite:///data/invite_tracker.db"
+
 
 
     # ==================== Logging ====================

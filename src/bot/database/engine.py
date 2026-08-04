@@ -43,28 +43,41 @@ def create_engine(
     Create and configure the async SQLAlchemy engine.
 
     Args:
-        database_url: PostgreSQL connection string
-            (e.g., 'postgresql+asyncpg://user:pass@host:5432/dbname').
+        database_url: Database connection string.
+            Supports both SQLite (sqlite+aiosqlite:///) and
+            PostgreSQL (postgresql+asyncpg://user:pass@host:5432/dbname).
         echo: If True, log all SQL statements (development only).
-        pool_size: Number of persistent connections in the pool.
-        max_overflow: Maximum number of connections above pool_size.
-        pool_recycle: Seconds before a connection is recycled
-            (prevents stale connections from PostgreSQL's idle timeout).
+        pool_size: Number of persistent connections in the pool (PostgreSQL only).
+        max_overflow: Maximum number of connections above pool_size (PostgreSQL only).
+        pool_recycle: Seconds before a connection is recycled (PostgreSQL only).
 
     Returns:
         Configured AsyncEngine instance.
 
     Notes:
-        - Uses asyncpg driver for maximum async performance.
+        - SQLite uses NullPool (no connection pooling).
+        - PostgreSQL uses asyncpg driver with configurable connection pooling.
         - pool_pre_ping=True ensures connections are validated before use
           (handles PostgreSQL restarts and network interruptions).
-        - pool_size is set conservatively; adjust based on expected concurrency.
     """
     from sqlalchemy.pool import NullPool
+
+    # SQLite doesn't support connection pooling
+    if database_url.startswith("sqlite"):
+        return create_async_engine(
+            url=database_url,
+            echo=echo,
+            poolclass=NullPool,
+        )
+
+    # PostgreSQL with connection pooling
     return create_async_engine(
         url=database_url,
         echo=echo,
-        poolclass=NullPool,
+        pool_size=pool_size,
+        max_overflow=max_overflow,
+        pool_recycle=pool_recycle,
+        pool_pre_ping=True,
     )
 
 
