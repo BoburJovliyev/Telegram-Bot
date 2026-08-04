@@ -8,10 +8,8 @@ or when it is kicked/leaves (to mark it inactive).
 import structlog
 from aiogram import Bot, F, Router
 from aiogram.filters.chat_member_updated import (
-    ADMIN_PROMOTED,
     IS_MEMBER,
     IS_NOT_MEMBER,
-    MEMBER,
     PROMOTED_TRANSITION,
     ChatMemberUpdatedFilter,
 )
