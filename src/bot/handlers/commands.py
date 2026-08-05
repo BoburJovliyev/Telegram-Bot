@@ -7,6 +7,7 @@ from aiogram.filters import Command, CommandStart
 from aiogram.types import Message
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from sqlalchemy.orm import joinedload
 
 from bot.models.member import Member
 from bot.services.group_service import GroupService
@@ -52,13 +53,17 @@ async def cmd_stats(message: Message, session_factory: async_sessionmaker[AsyncS
         return
 
     async with session_factory() as session:
-        stmt = select(Member).where(
-            Member.group_id == message.chat.id,
-            Member.user_id == message.from_user.id
+        stmt = (
+            select(Member)
+            .options(joinedload(Member.user))
+            .where(
+                Member.group_id == message.chat.id,
+                Member.user_id == message.from_user.id
+            )
         )
         member = (await session.execute(stmt)).scalar_one_or_none()
 
-    if not member:
+    if not member or member.total_invited == 0:
         await message.answer("You have not invited anyone yet.")
         return
 
@@ -78,11 +83,12 @@ async def cmd_leaderboard(message: Message, session_factory: async_sessionmaker[
     async with session_factory() as session:
         stmt = (
             select(Member)
+            .options(joinedload(Member.user))
             .where(Member.group_id == message.chat.id, Member.total_invited > 0)
             .order_by(Member.total_invited.desc())
             .limit(10)
         )
-        members = (await session.execute(stmt)).scalars().all()
+        members = (await session.execute(stmt)).unique().scalars().all()
 
     if not members:
         await message.answer("No invites have been tracked yet.")

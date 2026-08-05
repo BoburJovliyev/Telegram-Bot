@@ -45,7 +45,6 @@ class InviteTrackingService(BaseService):
                     title=chat.title or "Unknown Group",
                     username=chat.username,
                     description=chat.description,
-                    is_active=True,
                 )
 
             # 1. Ensure user exists in our DB
@@ -160,7 +159,7 @@ class InviteTrackingService(BaseService):
                 event_type="joined",
                 idempotency_key=f"event_{idempotency_key}",
                 invite_link_id=link_id_str,
-                event_metadata={"method": join_method, "is_rejoin": is_rejoin}
+                metadata={"method": join_method, "is_rejoin": is_rejoin}
             )
 
             # 8. Commit the entire transaction atomically
