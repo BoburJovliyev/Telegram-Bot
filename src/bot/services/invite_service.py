@@ -5,7 +5,7 @@ The core engine for tracking how members join groups, attributing
 the invite to the correct user, and updating statistics safely.
 """
 
-from aiogram.types import ChatInviteLink, User
+from aiogram.types import Chat, ChatInviteLink, User
 
 from bot.core.enums import JoinMethod, MemberStatus
 from bot.services.base import BaseService
@@ -16,7 +16,7 @@ class InviteTrackingService(BaseService):
 
     async def process_join(
         self,
-        group_id: int,
+        chat: Chat,
         user: User,
         join_method: str = JoinMethod.UNKNOWN.value,
         invite_link: ChatInviteLink | None = None,
@@ -27,6 +27,7 @@ class InviteTrackingService(BaseService):
         """
         Process a user joining the group and attribute the invite.
         """
+        group_id = chat.id
         self.logger.info(
             "Processing join", 
             group_id=group_id, 
@@ -35,6 +36,18 @@ class InviteTrackingService(BaseService):
         )
 
         async with self.uow as uow:
+            # 0. Ensure group exists
+            group = await uow.groups.get_by_id(group_id)
+            if not group or not group.is_active:
+                self.logger.info("Auto-registering missing/inactive group", group_id=group_id)
+                await uow.groups.upsert_group(
+                    chat_id=chat.id,
+                    title=chat.title or "Unknown Group",
+                    username=chat.username,
+                    description=chat.description,
+                    is_active=True,
+                )
+
             # 1. Ensure user exists in our DB
             await uow.users.upsert_user(
                 user_id=user.id,
@@ -172,6 +185,12 @@ class InviteTrackingService(BaseService):
         )
 
         async with self.uow as uow:
+            # 0. Ensure group exists
+            group = await uow.groups.get_by_id(group_id)
+            if not group:
+                self.logger.warning("Leave event for unknown group, ignoring", group_id=group_id)
+                return
+
             # 1. Update Member status
             await uow.members.upsert_member(
                 group_id=group_id,

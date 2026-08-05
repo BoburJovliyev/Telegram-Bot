@@ -66,7 +66,7 @@ async def member_joined_group(
 
     # Process via the service
     await invite_service.process_join(
-        group_id=chat_id,
+        chat=event.chat,
         user=user,
         join_method=join_method,
         invite_link=invite_link,
@@ -91,7 +91,7 @@ async def member_join_request(
     idempotency_key = f"join_req_{chat_id}_{user.id}_{request.date.timestamp()}"
 
     await invite_service.process_join(
-        group_id=chat_id,
+        chat=request.chat,
         user=user,
         join_method=JoinMethod.JOIN_REQUEST.value,
         invite_link=request.invite_link,
@@ -178,7 +178,7 @@ async def new_chat_members_handler(
             join_method = JoinMethod.PUBLIC.value
 
         await invite_service.process_join(
-            group_id=chat_id,
+            chat=message.chat,
             user=user,
             join_method=join_method,
             invite_link=None,
