@@ -123,6 +123,13 @@ class InviteTrackingService(BaseService):
 
             # 6. Increment Inviter's Statistics
             if inviter_id:
+                # Ensure the inviter exists in the members table before incrementing their stats
+                await uow.members.upsert_member(
+                    group_id=group_id,
+                    user_id=inviter_id,
+                    status=MemberStatus.ACTIVE.value,
+                )
+                
                 # If they rejoined, and they were previously invited by someone else,
                 # we don't give the 'total_invited' credit again (to prevent gaming),
                 # but we do increment 'active_invited'.
