@@ -11,13 +11,13 @@ This is the core of the invite tracking mechanism. It processes:
 
 import time
 import structlog
-from aiogram import Bot, Router
+from aiogram import Bot, Router, F
 from aiogram.filters.chat_member_updated import (
     IS_MEMBER,
     IS_NOT_MEMBER,
     ChatMemberUpdatedFilter,
 )
-from aiogram.types import ChatJoinRequest, ChatMemberUpdated
+from aiogram.types import ChatJoinRequest, ChatMemberUpdated, Message
 
 from bot.core.enums import JoinMethod, MemberStatus
 from bot.services.invite_service import InviteTrackingService
@@ -144,3 +144,45 @@ async def member_left_group(
         status=mapped_status,
         idempotency_key=idempotency_key,
     )
+
+
+@router.message(F.new_chat_members)
+async def new_chat_members_handler(
+    message: Message,
+    invite_service: InviteTrackingService,
+) -> None:
+    """
+    Fallback: Triggered when a normal user joins the group via service message.
+    This ensures we track when a user directly adds another user, which often 
+    generates a message instead of a chat_member update depending on privileges.
+    """
+    chat_id = message.chat.id
+    
+    if not message.new_chat_members:
+        return
+        
+    for user in message.new_chat_members:
+        if user.is_bot:
+            continue
+            
+        idempotency_key = f"join_msg_{chat_id}_{user.id}_{int(message.date.timestamp())}"
+        
+        join_method = JoinMethod.UNKNOWN.value
+        inviter_user = None
+        
+        # If the person who sent the message is not the person who joined, it's an admin/user add
+        if message.from_user and message.from_user.id != user.id:
+            join_method = JoinMethod.ADMIN_ADDED.value
+            inviter_user = message.from_user
+        elif message.from_user and message.from_user.id == user.id:
+            join_method = JoinMethod.PUBLIC.value
+
+        await invite_service.process_join(
+            group_id=chat_id,
+            user=user,
+            join_method=join_method,
+            invite_link=None,
+            idempotency_key=idempotency_key,
+            is_via_join_request=False,
+            inviter_user=inviter_user,
+        )

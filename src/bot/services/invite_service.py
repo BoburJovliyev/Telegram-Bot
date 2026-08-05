@@ -52,8 +52,8 @@ class InviteTrackingService(BaseService):
             
             # If they are already active and this is processed again, it might be a duplicate event
             if existing_member and existing_member.status == MemberStatus.ACTIVE.value:
-                self.logger.warning("Join event for already active member", user_id=user.id)
-                # We still proceed to ensure idempotency handles it safely
+                self.logger.warning("Join event for already active member, skipping", user_id=user.id)
+                return
 
             # 3. Track Link Usage
             inviter_id = None
