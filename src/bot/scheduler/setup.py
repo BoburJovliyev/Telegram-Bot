@@ -24,8 +24,19 @@ def setup_scheduler(
     logger.info("Registering background jobs...")
     
     from bot.jobs.hourly_report import send_hourly_reports
+    from bot.jobs.half_hourly_report import send_half_hourly_reports
     
-    # 0. Hourly Summary Report (runs at the top of every hour)
+    # 0. Half-Hourly Daily Summary Report (runs at 00 and 30 past every hour)
+    scheduler.add_job(
+        send_half_hourly_reports,
+        trigger="cron",
+        minute="0,30",
+        kwargs={"bot": bot, "session_factory": session_factory},
+        id="half_hourly_reports",
+        replace_existing=True,
+    )
+
+    # 0.1 Hourly Summary Report (runs at the top of every hour)
     scheduler.add_job(
         send_hourly_reports,
         trigger="cron",

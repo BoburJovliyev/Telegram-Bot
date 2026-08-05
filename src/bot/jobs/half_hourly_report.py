@@ -1,8 +1,8 @@
 """
-Hourly report job.
+Half-hourly daily report job.
 """
 import structlog
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from aiogram import Bot
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
@@ -10,13 +10,15 @@ from bot.repositories.unit_of_work import UnitOfWork
 
 logger = structlog.get_logger(__name__)
 
-async def send_hourly_reports(bot: Bot, session_factory: async_sessionmaker[AsyncSession]) -> None:
+async def send_half_hourly_reports(bot: Bot, session_factory: async_sessionmaker[AsyncSession]) -> None:
     """
-    Sends an hourly report to group owners about who added how many members.
+    Sends a report every half hour to group/channel owners about who added how many members today.
     """
-    logger.info("Starting hourly report job")
+    logger.info("Starting half-hourly daily report job")
     
-    since = datetime.now(timezone.utc) - timedelta(hours=1)
+    # Start of the current day (UTC)
+    now = datetime.now(timezone.utc)
+    since = now.replace(hour=0, minute=0, second=0, microsecond=0)
     
     async with session_factory() as session:
         uow = UnitOfWork(session)
@@ -37,7 +39,7 @@ async def send_hourly_reports(bot: Bot, session_factory: async_sessionmaker[Asyn
                     
                 # Format the report
                 lines = [
-                    f"📊 <b>{group.title}</b> guruhi/kanali uchun so'nggi 1 soatlik hisobot:\n",
+                    f"📊 <b>{group.title}</b> guruhi/kanali uchun BUGUNGI hisobot (shu vaqtgacha):\n",
                     f"Jami yangi qo'shilganlar: <b>{total_joined}</b>",
                     f"Shundan havola (link) orqali: <b>{joined_via_link}</b>\n"
                 ]
@@ -51,6 +53,6 @@ async def send_hourly_reports(bot: Bot, session_factory: async_sessionmaker[Asyn
                 
                 try:
                     await bot.send_message(group.owner_id, report_text)
-                    logger.info("Sent hourly report", group_id=group.id, owner_id=group.owner_id)
+                    logger.info("Sent half-hourly daily report", group_id=group.id, owner_id=group.owner_id)
                 except Exception as e:
-                    logger.error("Failed to send hourly report", group_id=group.id, owner_id=group.owner_id, error=str(e))
+                    logger.error("Failed to send half-hourly report", group_id=group.id, owner_id=group.owner_id, error=str(e))

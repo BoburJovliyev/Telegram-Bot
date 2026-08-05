@@ -53,8 +53,8 @@ async def bot_added_to_group(
     await bot.send_message(
         chat.id,
         (
-            "👋 Assalomu alaykum! Men guruhga qo'shildim.\n\n"
-            "Mening vazifam guruhga kim qancha odam qo'shganini hisoblab borish. "
+            "👋 Assalomu alaykum! Men guruh/kanalga qo'shildim.\n\n"
+            "Mening vazifam shu guruh/kanalga kim qancha odam qo'shganini hisoblab borish. "
             "To'g'ri ishlashim uchun **menga Administrator huquqlarini (xususan 'Foydalanuvchilarni qo'shish' - Invite Users) berishingiz shart**.\n\n"
             "Nimalar qila olishimni ko'rish uchun /help buyrug'ini yuboring."
         ),
@@ -66,13 +66,13 @@ async def bot_added_to_group(
             await bot.send_message(
                 owner_id,
                 (
-                    f"👋 Assalomu alaykum! Men sizning <b>{chat.title}</b> guruhingizga qo'shildim.\n\n"
+                    f"👋 Assalomu alaykum! Men sizning <b>{chat.title}</b> guruh/kanalingizga qo'shildim.\n\n"
                     "🤖 <b>Mening vazifalarim:</b>\n"
-                    "• Guruhga kim qancha odam qo'shganini aniq hisoblab borish\n"
+                    "• Guruh/kanalga kim qancha odam qo'shganini aniq hisoblab borish\n"
                     "• Havola (link) orqali qo'shilganlarni ham aniqlash\n"
-                    "• Har 1 soatda sizga yangi qo'shilgan a'zolar bo'yicha hisobot yuborish\n\n"
-                    "✅ <b>Muhim eslatma:</b> To'liq ishlashim uchun guruhda menga <i>'Foydalanuvchilarni qo'shish' (Invite Users)</i> huquqini berishingiz so'raladi.\n\n"
-                    "Guruhda /hisobot buyrug'i orqali istalgan vaqt statistikalarni ko'rishingiz mumkin."
+                    "• Har 30 daqiqada sizga bugungi qo'shilgan a'zolar bo'yicha hisobot yuborish\n\n"
+                    "✅ <b>Muhim eslatma:</b> To'liq ishlashim uchun guruh/kanalda menga <i>'Foydalanuvchilarni qo'shish' (Invite Users)</i> huquqini berishingiz so'raladi.\n\n"
+                    "Guruh/kanalda /hisobot buyrug'i orqali istalgan vaqt statistikalarni ko'rishingiz mumkin."
                 )
             )
         except Exception as e:
