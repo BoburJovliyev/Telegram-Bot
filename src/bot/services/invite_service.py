@@ -22,6 +22,7 @@ class InviteTrackingService(BaseService):
         invite_link: ChatInviteLink | None = None,
         idempotency_key: str = "",
         is_via_join_request: bool = False,
+        inviter_user: User | None = None,
     ) -> None:
         """
         Process a user joining the group and attribute the invite.
@@ -80,6 +81,18 @@ class InviteTrackingService(BaseService):
                 
                 # Only increment usage if it's not a duplicate
                 await uow.invite_links.increment_usage(link_id_str)
+            elif inviter_user:
+                # Added by another user
+                inviter_id = inviter_user.id
+                await uow.users.upsert_user(
+                    user_id=inviter_user.id,
+                    first_name=inviter_user.first_name,
+                    username=inviter_user.username,
+                    last_name=inviter_user.last_name,
+                    language_code=inviter_user.language_code,
+                    is_premium=inviter_user.is_premium or False,
+                    is_bot=inviter_user.is_bot,
+                )
 
             # 4. Create the Attribution Record
             record = await uow.invite_records.create_record(

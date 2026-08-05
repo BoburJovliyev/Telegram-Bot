@@ -48,6 +48,7 @@ async def member_joined_group(
     join_method = JoinMethod.UNKNOWN.value
     invite_link = None
     is_via_join_request = False
+    inviter_user = None
 
     # 1. Check if joined via an Invite Link
     if event.invite_link:
@@ -57,14 +58,7 @@ async def member_joined_group(
     # 2. Check if added by an Administrator (from_user is different from the joined user)
     elif event.from_user.id != user.id:
         join_method = JoinMethod.ADMIN_ADDED.value
-        # If someone added them, the 'invite_link' logic doesn't apply directly
-        # but we attribute the add to the 'from_user' by pretending they are the link creator
-        # for attribution purposes inside the service, or handled via specific logic.
-        # For simplicity, we pass None for invite_link, the service logic must handle this.
-        # To do it properly, we'd adjust the service signature.
-        # Since service assumes invite_link provides the inviter_id, we will need to handle
-        # this in the service or here. Let's rely on invite_link for now, and handle ADMIN_ADD
-        # securely later if needed.
+        inviter_user = event.from_user
 
     # 3. If no invite link and from_user == user, it's a public join (searched by username)
     elif event.from_user.id == user.id:
@@ -78,6 +72,7 @@ async def member_joined_group(
         invite_link=invite_link,
         idempotency_key=idempotency_key,
         is_via_join_request=is_via_join_request,
+        inviter_user=inviter_user,
     )
 
 

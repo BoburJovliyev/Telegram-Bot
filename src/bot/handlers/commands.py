@@ -78,7 +78,7 @@ async def cmd_leaderboard(message: Message, session_factory: async_sessionmaker[
     async with session_factory() as session:
         stmt = (
             select(Member)
-            .where(Member.group_id == message.chat.id)
+            .where(Member.group_id == message.chat.id, Member.total_invited > 0)
             .order_by(Member.total_invited.desc())
             .limit(10)
         )
